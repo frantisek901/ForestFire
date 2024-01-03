@@ -435,7 +435,7 @@ Mass-ashes-ratio
 Mass-ashes-ratio
 0
 100
-30.0
+90.0
 1
 1
 NIL
@@ -465,7 +465,7 @@ Mass-heat-ratio
 Mass-heat-ratio
 0
 100
-70.0
+10.0
 1
 1
 NIL
@@ -511,7 +511,7 @@ Ashes-mass-ratio
 Ashes-mass-ratio
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -541,7 +541,7 @@ INPUTBOX
 977
 623
 Stop-at
-31.0
+1100.0
 1
 0
 Number
@@ -584,7 +584,7 @@ Transiency
 Transiency
 0
 100
-1.0
+100.0
 1
 1
 NIL
@@ -1063,6 +1063,56 @@ repeat 180 [ go ]
     </enumeratedValueSet>
     <enumeratedValueSet variable="Stop-at">
       <value value="3100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="BurnNeis4">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Watch-fire">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="secondtExperiment" repetitions="1" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="P">
+      <value value="0"/>
+      <value value="0.001"/>
+      <value value="0.1"/>
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="F">
+      <value value="0.001"/>
+      <value value="0.1"/>
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tree-radiation">
+      <value value="10"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-heat-ratio">
+      <value value="10"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-ashes-ratio">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-retention-ratio">
+      <value value="10"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-mass-ratio">
+      <value value="10"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Initial-density">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Transiency">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Stop-at">
+      <value value="1100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="BurnNeis4">
       <value value="false"/>
