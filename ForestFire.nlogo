@@ -11,6 +11,7 @@
 ;;;;    (it "radiates" with same principle 1/6 and 1/12, but still IDK how much and whether probability might be 100% -- parameter?)
 ;;;;
 
+extensions [csv]
 
 globals [
   initial-trees     ;; how many trees (green patches) we started with
@@ -31,6 +32,16 @@ globals [
   ashes_count       ;;
   ashes_mass        ;;
   empty_count       ;;
+  list_mass_grown        ;;
+  list_mass_burnt        ;;
+  list_trees_grown       ;;
+  list_trees_burnt       ;;
+  list_trees_count       ;;
+  list_trees_mass        ;;
+  list_ashes_count       ;;
+  list_ashes_mass        ;;
+  list_empty_count       ;;
+  list-for-file
 ]
 
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
@@ -44,6 +55,20 @@ patches-own [potential ashes]
 to setup
   clear-all
   set-default-shape turtles "square"
+
+  ;; setting constants
+  set Mass-ashes-ratio 100 - Mass-heat-ratio
+  set list_mass_grown []       ;;
+  set list_mass_burnt []       ;;
+  set list_trees_grown []      ;;
+  set list_trees_burnt []      ;;
+  set list_trees_count []      ;;
+  set list_trees_mass []       ;;
+  set list_ashes_count []      ;;
+  set list_ashes_mass []       ;;
+  set list_empty_count []      ;;
+  set list-for-file [["Step" "mass_grown" "mass_burnt" "trees_grown" "trees_burnt" "trees_count" "trees_mass" "ashes_count" "ashes_mass" "empty_count"]]
+
   ;; make some green trees
   ask patches with [(random-float 100) < Initial-density] [
     sprout-trees 1 [
@@ -52,12 +77,7 @@ to setup
       set pcolor green
     ]
   ]
-  ;; make a column of burning trees
-;  ask patches with [pxcor = min-pxcor]
-;    [ ignite ]
-  ;; set tree counts
-  set initial-trees count patches with [pcolor = green]
-  set burned-trees 0
+
   reset-ticks
 end
 
@@ -85,17 +105,42 @@ to go
   set mass_burnt mass-before-burn - mass-after-burn       ;;
   set trees_burnt trees-before-burn - trees-after-burn    ;;
   set trees_grown trees-before-burn - trees-before-step   ;;
-;  set trees_count count        ;;
-;  trees_mass        ;;
-;  ashes_count       ;;
-;  ashes_mass        ;;
-;  empty_count       ;;
-
+  set trees_count count patches with [pcolor = green]     ;;
+  set trees_mass sum [mass] of trees                      ;;
+  set ashes_count count patches with [pcolor = 32]        ;;
+  set ashes_mass sum [ashes] of patches                   ;;
+  set empty_count count patches with [pcolor = black]     ;;
 
   tick
 
+  ;; Lists
+  if ticks >= Transiency [
+    set list_mass_grown lput mass_grown list_mass_grown       ;;
+    set list_mass_burnt lput mass_burnt list_mass_burnt       ;;
+    set list_trees_grown lput trees_grown list_trees_grown    ;;
+    set list_trees_burnt lput trees_burnt list_trees_burnt    ;;
+    set list_trees_count lput trees_count list_trees_count    ;;
+    set list_trees_mass lput trees_mass list_trees_mass       ;;
+    set list_ashes_count lput ashes_count list_ashes_count    ;;
+    set list_ashes_mass lput ashes_mass list_ashes_mass       ;;
+    set list_empty_count lput empty_count list_empty_count    ;;
+    set list-for-file lput (list ticks
+      precision mass_grown 3
+      precision mass_burnt 3
+      trees_grown
+      trees_burnt
+      trees_count
+      precision trees_mass 3
+      ashes_count
+      precision ashes_mass 3
+      empty_count) list-for-file
+  ]
+
   ;; Stopping
-  if ticks >= Stop-at [stop]
+  if ticks >= Stop-at [
+    csv:to-file (word "res_" (P * 1000) "_" (F * 1000) "_" Tree-radiation "_" Mass-heat-ratio "_" Mass-ashes-ratio "_" Ashes-retention-ratio "_" Ashes-mass-ratio "_" Transiency "_" Stop-at ".csv") list-for-file
+    stop
+  ]
 
 end
 
@@ -131,8 +176,10 @@ end
 to to-fire
   ;; Starting fires
   ;;; Preparation
-;  set ticks-state ticks
-;  reset-ticks
+  if Watch-fire [
+    set ticks-state ticks
+    reset-ticks
+  ]
 
   ;;; Mere starting
   ask trees with [(random-float 100) <= F] [
@@ -144,8 +191,10 @@ to to-fire
   burning
 
   ;; At the end reset ticks to the original value
-;  reset-ticks
-;  tick-advance ticks-state
+  if Watch-fire [
+    reset-ticks
+    tick-advance ticks-state
+  ]
 end
 
 
@@ -174,11 +223,11 @@ to burning
       set breed embers
     ]
     fade-embers
-    ;tick
+    if Watch-fire [tick]
   ]
   while [any? embers] [
     fade-embers
-    ;tick
+    if Watch-fire [tick]
   ]
 end
 
@@ -295,7 +344,7 @@ P
 P
 0
 10
-0.01
+0.0
 .001
 1
 NIL
@@ -354,7 +403,7 @@ Tree-radiation
 Tree-radiation
 0
 100
-100.0
+10.0
 1
 1
 NIL
@@ -386,7 +435,7 @@ Mass-ashes-ratio
 Mass-ashes-ratio
 0
 100
-60.0
+30.0
 1
 1
 NIL
@@ -401,7 +450,7 @@ Ashes-retention-ratio
 Ashes-retention-ratio
 0
 100
-40.0
+10.0
 1
 1
 NIL
@@ -416,7 +465,7 @@ Mass-heat-ratio
 Mass-heat-ratio
 0
 100
-40.0
+70.0
 1
 1
 NIL
@@ -462,7 +511,7 @@ Ashes-mass-ratio
 Ashes-mass-ratio
 0
 100
-40.0
+50.0
 1
 1
 NIL
@@ -473,7 +522,7 @@ PLOT
 71
 1670
 221
-Mass histogram
+Tree-Mass histogram
 NIL
 NIL
 0.0
@@ -487,15 +536,95 @@ PENS
 "default" 10.0 1 -16777216 true "" "histogram [(mass )] of trees"
 
 INPUTBOX
-5
-121
-160
-181
+822
+563
+977
+623
 Stop-at
-1100.0
+31.0
 1
 0
 Number
+
+SWITCH
+31
+667
+145
+700
+Watch-fire
+Watch-fire
+1
+1
+-1000
+
+PLOT
+1467
+241
+1667
+391
+Ashes-mass histogram
+NIL
+NIL
+0.0
+100.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 10.0 1 -16777216 true "" "histogram [ashes] of patches with [ashes > 0]"
+
+SLIDER
+992
+563
+1164
+596
+Transiency
+Transiency
+0
+100
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+PLOT
+1470
+413
+1670
+563
+Histogram trees-counts
+NIL
+NIL
+18000.0
+100000.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 10000.0 1 -16777216 true "" "histogram list_trees_count"
+
+PLOT
+1467
+594
+1667
+744
+Histogram trees-burnt
+NIL
+NIL
+0.0
+17000.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1000.0 1 -16777216 true "" "histogram list_trees_burnt"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -878,6 +1007,71 @@ setup
 repeat 180 [ go ]
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="firstExperiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="P">
+      <value value="0"/>
+      <value value="0.001"/>
+      <value value="0.01"/>
+      <value value="0.1"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="F">
+      <value value="0.001"/>
+      <value value="0.01"/>
+      <value value="0.1"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="4"/>
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tree-radiation">
+      <value value="10"/>
+      <value value="40"/>
+      <value value="70"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-heat-ratio">
+      <value value="10"/>
+      <value value="40"/>
+      <value value="70"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-ashes-ratio">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-retention-ratio">
+      <value value="10"/>
+      <value value="50"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-mass-ratio">
+      <value value="10"/>
+      <value value="50"/>
+      <value value="90"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Initial-density">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Transiency">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Stop-at">
+      <value value="3100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="BurnNeis4">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Watch-fire">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
