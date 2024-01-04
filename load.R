@@ -40,6 +40,7 @@ tm = str_split_fixed(as_tibble(fl)$value, pattern = "_", n = 10)[,2:10] %>%
   as_tibble() %>% 
   mutate(
     across(everything(), ~ parse_number(.x)),
+    Burn_neis4 = FALSE,
     file_name = as_tibble(fl)$value)
 names(tm)[1:9] = c("P", "F", "Tree_radiation", "Mass_heat_ratio", "Mass_ashes_ratio", "Ashes_retention_ratio", "Ashes_mass_ratio", "Transiency", "Stop_at")
 
@@ -47,6 +48,35 @@ names(tm)[1:9] = c("P", "F", "Tree_radiation", "Mass_heat_ratio", "Mass_ashes_ra
 tb = right_join(tm, tb)
 
 
+# Getting list of files with results
+fl = list.files(pattern = "old_")
+
+# Loading
+## First file 
+fn = fl[[1]]
+ta = read_csv(fn) %>% mutate(file_name = fn)
+
+## Other files
+for (f in 2:length(fl)) {
+  fn = fl[[f]]
+  ta = ta %>% add_row(read_csv(fn) %>% mutate(file_name = fn))
+}
+
+## Metadata
+tm = str_split_fixed(as_tibble(fl)$value, pattern = "_", n = 10)[,2:10] %>% 
+  as_tibble() %>% 
+  mutate(
+    across(everything(), ~ parse_number(.x)),
+    Burn_neis4 = TRUE,
+    file_name = as_tibble(fl)$value)
+names(tm)[1:9] = c("P", "F", "Tree_radiation", "Mass_heat_ratio", "Mass_ashes_ratio", "Ashes_retention_ratio", "Ashes_mass_ratio", "Transiency", "Stop_at")
+
+## Joining data with metadata
+ta = right_join(tm, ta)
+
+
+# Merging both files
+tc = add_row(ta, tb)
 
 # The first graphs --------------------------------------------------------
 

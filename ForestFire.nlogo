@@ -138,7 +138,7 @@ to go
 
   ;; Stopping
   if ticks >= Stop-at [
-    csv:to-file (word "res_" (P * 1000) "_" (F * 1000) "_" Tree-radiation "_" Mass-heat-ratio "_" Mass-ashes-ratio "_" Ashes-retention-ratio "_" Ashes-mass-ratio "_" Transiency "_" Stop-at ".csv") list-for-file
+    csv:to-file (word "old_" (P * 1000) "_" (F * 1000) "_" Tree-radiation "_" Mass-heat-ratio "_" Mass-ashes-ratio "_" Ashes-retention-ratio "_" Ashes-mass-ratio "_" Transiency "_" Stop-at ".csv") list-for-file
     stop
   ]
 
@@ -344,7 +344,7 @@ P
 P
 0
 10
-0.0
+10.0
 .001
 1
 NIL
@@ -359,7 +359,7 @@ F
 F
 0
 5
-0.001
+0.01
 .001
 1
 NIL
@@ -403,7 +403,7 @@ Tree-radiation
 Tree-radiation
 0
 100
-10.0
+0.0
 1
 1
 NIL
@@ -435,7 +435,7 @@ Mass-ashes-ratio
 Mass-ashes-ratio
 0
 100
-90.0
+0.0
 1
 1
 NIL
@@ -450,7 +450,7 @@ Ashes-retention-ratio
 Ashes-retention-ratio
 0
 100
-10.0
+0.0
 1
 1
 NIL
@@ -465,7 +465,7 @@ Mass-heat-ratio
 Mass-heat-ratio
 0
 100
-10.0
+100.0
 1
 1
 NIL
@@ -498,7 +498,7 @@ SWITCH
 639
 BurnNeis4
 BurnNeis4
-1
+0
 1
 -1000
 
@@ -511,7 +511,7 @@ Ashes-mass-ratio
 Ashes-mass-ratio
 0
 100
-10.0
+0.0
 1
 1
 NIL
@@ -1116,6 +1116,60 @@ repeat 180 [ go ]
     </enumeratedValueSet>
     <enumeratedValueSet variable="BurnNeis4">
       <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Watch-fire">
+      <value value="false"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="oldtExperiment" repetitions="1" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="P">
+      <value value="0"/>
+      <value value="0.001"/>
+      <value value="0.01"/>
+      <value value="0.1"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="4"/>
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="F">
+      <value value="0.001"/>
+      <value value="0.01"/>
+      <value value="0.1"/>
+      <value value="1"/>
+      <value value="2"/>
+      <value value="4"/>
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="BurnNeis4">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tree-radiation">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-heat-ratio">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Mass-ashes-ratio">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-retention-ratio">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Ashes-mass-ratio">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Initial-density">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Transiency">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Stop-at">
+      <value value="1100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Watch-fire">
       <value value="false"/>
