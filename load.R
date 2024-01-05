@@ -24,7 +24,7 @@ library(tidyverse)
 # Getting list of files with results
 fl = list.files(pattern = "res_")
 
-# Loading
+# Loading updated model data
 ## First file 
 fn = fl[[1]]
 tb = read_csv(fn) %>% mutate(file_name = fn)
@@ -48,10 +48,10 @@ names(tm)[1:9] = c("P", "F", "Tree_radiation", "Mass_heat_ratio", "Mass_ashes_ra
 tb = right_join(tm, tb)
 
 
-# Getting list of files with results
+# Getting list of files with results on old-school forest fire
 fl = list.files(pattern = "old_")
 
-# Loading
+# Loading old-school forest fire data
 ## First file 
 fn = fl[[1]]
 ta = read_csv(fn) %>% mutate(file_name = fn)
@@ -76,14 +76,21 @@ ta = right_join(tm, ta)
 
 
 # Merging both files
-tc = add_row(ta, tb)
+tc = add_row(ta, tb) %>% 
+  # Hmm... I found some mistakes -- trees should be grown with mass 1 not 0... 
+  mutate(
+    mass_grown = if_else(!Burn_neis4 & Tree_radiation == 0, mass_grown, mass_grown + trees_grown),
+    mass_burnt = if_else(!Burn_neis4 & Tree_radiation == 0, mass_burnt, mass_burnt + trees_burnt),
+    trees_mass = if_else(!Burn_neis4 & Tree_radiation == 0, trees_mass, trees_mass + trees_count)
+  )
+
 
 # The first graphs --------------------------------------------------------
 
 tb %>% 
   ggplot() +
   aes(x = mass_burnt) +
-  facet_grid(F ~ P) +
+  facet_grid(F ~ P, labeller = "label_both") +
   geom_histogram() +
   scale_x_log10() +
   theme_classic()
@@ -99,4 +106,53 @@ tb %>%
   theme_classic()
 
 
+ta %>% 
+  ggplot() +
+  aes(x = mass_burnt) +
+  facet_grid(F ~ P, labeller = "label_both") +
+  geom_histogram() +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic()
+
+
+tc %>%
+  filter(P %in% c(1, 100, 1000), F %in% c(1, 100, 1000), Tree_radiation %in% c(0)) %>% 
+  # count(Burn_neis4)
+  ggplot() +
+  aes(x = trees_count, fill = Burn_neis4) +
+  facet_grid(rows = vars(F), cols = vars(P), labeller = "label_both", scales = "free_x") +
+  geom_density(alpha = 0.5) +
+  scale_x_log10() +
+  # scale_y_log10() +
+  theme_classic()
+
+
+tc %>%
+  filter(P %in% c(1, 100, 1000), F %in% c(1, 100, 1000), Tree_radiation %in% c(0)) %>% 
+  # count(Burn_neis4)
+  ggplot() +
+  aes(y = mass_grown, x = Burn_neis4, fill = Burn_neis4) +
+  facet_grid(rows = vars(F), cols = vars(P), labeller = "label_both", scales = "free_y") +
+  geom_boxplot() +
+  # scale_x_log10() +
+  scale_y_log10() +
+  theme_classic()
+
+
+tc %>%
+  filter(P %in% c(1, 100, 1000), F %in% c(1, 100, 1000), # !Burn_neis4,
+         Tree_radiation %in% c(0)) %>% 
+  # count(Burn_neis4, Ashes_mass_ratio)
+  ggplot() +
+  aes(y = mass_burnt, x = mass_grown, col = factor(Ashes_mass_ratio)) +
+  facet_grid(rows = vars(F), cols = vars(P), labeller = "label_both", scales = "fixed") +
+  geom_point(alpha = 0.1) +
+  scale_x_log10() +
+  scale_y_log10() +
+  theme_classic()
+
+
+
+count(tb, Tree_radiation)
 
